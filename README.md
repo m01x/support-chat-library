@@ -18,3 +18,7 @@ Esta aplicación es para explicar cómo usar React Router tanto como librería y
 - Lucide Icons
 - V0
 - TypeScript
+
+### Herramientas
+- Cursor IDE
+https://gist.github.com/Klerith/d1e2781e75f24b52eb29a663922b2bfd
