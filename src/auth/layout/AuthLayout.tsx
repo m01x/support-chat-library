@@ -1,6 +1,4 @@
-//import { LoginForm } from "../../components/login-form"
-
-import LoginPage from "@/app/login/page"
+import { LoginPage } from '../pages/LoginPage';
 
 const AuthLayout = () => {
     return (

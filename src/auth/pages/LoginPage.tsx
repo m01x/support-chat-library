@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label"
 
 import placeholderimage from "@/assets/placeholder.svg";
 
-export function LoginForm({ className, ...props }: React.ComponentProps<"div">) {
+export function LoginPage({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card className="overflow-hidden p-0">
