@@ -1,7 +1,6 @@
 import { lazy, Suspense } from "react"
 import { BrowserRouter, Navigate, Route, Routes } from "react-router"
 import AuthLayout from "./auth/layout/AuthLayout"
-import ChatPage from "./chat/pages/ChatPage"
 import { LoginPage } from "./auth/pages/LoginPage"
 import { RegisterPage } from "./auth/pages/RegisterPage"
 import { sleep } from "./lib/sleep"
@@ -12,6 +11,8 @@ const ChatLayout = lazy( async() => {
     return import("./chat/layout/ChatLayout");
 });
 
+const ChatPage = lazy( async() => import("./chat/pages/ChatPage"));
+const NoChatSelected = lazy( async() => import("./chat/pages/NoChatSelected"));
 export const AppRouter = () => {
     return (
         <BrowserRouter>
@@ -37,7 +38,8 @@ export const AppRouter = () => {
                             <ChatLayout />
                         </Suspense>
                 } >
-                    <Route index element={<ChatPage />} />
+                    <Route index element={<NoChatSelected />} />
+                    <Route path="/chat/:clientId" element={<ChatPage />} />
                 </Route>
                 <Route path="/" element={<Navigate to="/auth" />} />
                 <Route path="*" element={<Navigate to="/auth" />} />
