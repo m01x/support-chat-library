@@ -46,9 +46,6 @@ export default function ChatLayout() {
             <h2 className="font-medium">Contact details</h2>
           </div>
           <ContactDetails clientId={clientId} />
-          {/* <Suspense fallback={<ContactInfoSkeleton />}>
-            {clientId ? <ContactInfo /> : <NoContactSelected />}
-          </Suspense> */}
         </div>
       </div>
     </div>

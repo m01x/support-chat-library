@@ -1,40 +1,47 @@
 import { useState } from "react"
 import { useParams } from "react-router"
+import { useQuery } from "@tanstack/react-query"
+
+import { getClientMessages } from "@/fake/fake-data"
+
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Copy, Download, ThumbsUp, ThumbsDown, Send } from "lucide-react"
-
-interface Message {
-  role: "agent" | "user"
-  content: string
-  timestamp: string
-}
+// Una de las ventajas de tanstack es que no necesitas definir interfaces, 
+// puedes usar el tipo de dato que te devuelve la API. 
+// interface Message {        
+//   role: "agent" | "user"
+//   content: string
+//   timestamp: string
+// }
 
 export default function ChatPage() {
 
   const { clientId } = useParams();
-  console.log('client selected', clientId)
   
-  const [input, setInput] = useState("")
-  const [messages] = useState<Message[]>([
-    {
-      role: "agent",
-      content: "Hello, I am a generative AI agent. How may I assist you today?",
-      timestamp: "4:08:28 PM",
-    },
-    {
-      role: "user",
-      content: "Hi, I'd like to check my bill.",
-      timestamp: "4:08:37 PM",
-    },
-    {
-      role: "agent",
-      content:
-        "Please hold for a second.\n\nOk, I can help you with that\n\nI'm pulling up your current bill information\n\nYour current bill is $150, and it is due on August 31, 2024.\n\nIf you need more details, feel free to ask!",
-      timestamp: "4:08:37 PM",
-    },
-  ])
+  
+  const [input, setInput] = useState("");
+
+  const { data: messages=[], isLoading } = useQuery({
+    queryKey: ['messages', clientId],
+    queryFn: () => getClientMessages(clientId ?? ''),
+  });
+
+  if (isLoading) return (
+    <div className="h-full w-full flex items-center justify-center">
+      <div className="flex items-center">
+        <span className="text-cyan-400">Cargando</span>
+        <div className="flex">
+          <span className="text-cyan-400 animate-bounce [animation-delay:-0.3s]">.</span>
+          <span className="text-cyan-400 animate-bounce [animation-delay:-0.15s]">.</span>
+          <span className="text-cyan-400 animate-bounce">.</span>
+        </div>
+      </div>
+    </div>
+  );
+
+
 
   return (
     <div className="flex-1 flex flex-col">
@@ -42,14 +49,14 @@ export default function ChatPage() {
         <div className="space-y-4">
           {messages.map((message, index) => (
             <div key={index} className="w-full">
-              {message.role === "agent" ? (
+              {message.sender === "agent" ? (
                 // Agent message - left aligned
                 <div className="flex gap-2 max-w-[80%]">
                   <div className="h-8 w-8 rounded-full bg-primary flex-shrink-0" />
                   <div className="space-y-2">
                     <div className="flex items-center gap-2">
                       <span className="text-sm font-medium">NexTalk</span>
-                      <span className="text-sm text-muted-foreground">{message.timestamp}</span>
+                      <span className="text-sm text-muted-foreground">{message.createdAt.toLocaleString()}</span>
                     </div>
                     <div className="p-3 bg-muted/50 rounded-lg">
                       <p className="text-sm whitespace-pre-wrap">{message.content}</p>
@@ -75,7 +82,7 @@ export default function ChatPage() {
                 <div className="flex flex-col items-end">
                   <div className="text-right mb-1">
                     <span className="text-sm font-medium mr-2">G5</span>
-                    <span className="text-sm text-muted-foreground">{message.timestamp}</span>
+                    <span className="text-sm text-muted-foreground">{message.createdAt.toLocaleString()}</span>
                   </div>
                   <div className="bg-black text-white p-3 rounded-lg max-w-[80%]">
                     <p className="text-sm whitespace-pre-wrap">{message.content}</p>
@@ -86,9 +93,37 @@ export default function ChatPage() {
           ))}
         </div>
       </ScrollArea>
-      <div className="p-4 border-t">
-        <div className="flex items-center gap-2">
-          <Textarea
+      {messages.length === 0 && (
+        <div className="flex-1 flex items-center justify-center">
+          <div className="flex flex-col items-center gap-2">
+            <div className="flex flex-col items-center gap-2">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="48"
+                height="48"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="text-muted-foreground opacity-50"
+              >
+                <path d="M9 10h.01" />
+                <path d="M15 10h.01" />
+                <path d="M12 2a8 8 0 0 0-8 8v12l3-3 2.5 2.5L12 19l2.5 2.5L17 19l3 3V10a8 8 0 0 0-8-8z" />
+                <path d="M9 16h6" />
+              </svg>
+              <p className="text-muted-foreground text-sm">No hay mensajes</p>
+              <p className="text-muted-foreground text-xs">Envía un mensaje para empezar la conversación</p>
+            </div>
+          </div>
+
+        </div>
+      )}
+        <div className="p-4 border-t">
+          <div className="flex items-center gap-2">
+            <Textarea
             placeholder="Type a message as a customer"
             value={input}
             onChange={(e) => setInput(e.target.value)}
