@@ -1,13 +1,14 @@
 import { useState } from "react"
 import { useParams } from "react-router"
-import { useQuery } from "@tanstack/react-query"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 
-import { getClientMessages } from "@/fake/fake-data"
+import { getClientMessages, sendMessage } from "@/fake/fake-data"
 
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Copy, Download, ThumbsUp, ThumbsDown, Send } from "lucide-react"
+import { Message } from "../interfaces/chat.interface"
 // Una de las ventajas de tanstack es que no necesitas definir interfaces, 
 // puedes usar el tipo de dato que te devuelve la API. 
 // interface Message {        
@@ -18,6 +19,7 @@ import { Copy, Download, ThumbsUp, ThumbsDown, Send } from "lucide-react"
 
 export default function ChatPage() {
 
+  const queryClient = useQueryClient();
   const { clientId } = useParams();
   
   
@@ -27,6 +29,26 @@ export default function ChatPage() {
     queryKey: ['messages', clientId],
     queryFn: () => getClientMessages(clientId ?? ''),
   });
+
+  const { mutate: sendMessageMutation } = useMutation({
+    mutationFn: sendMessage,
+    onSuccess: (newMessage) => {
+      queryClient.setQueryData(['messages', clientId], (oldMessages: Message[]) => [...oldMessages, newMessage]);
+    }
+  });
+
+
+  const handleSubmit = ( e:React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    
+    sendMessageMutation({
+      clientId: clientId ?? '',
+      content: input,
+      createdAt: new Date(),
+      sender: 'agent',
+    });
+    setInput('');
+  }
 
   if (isLoading) return (
     <div className="h-full w-full flex items-center justify-center">
@@ -49,7 +71,7 @@ export default function ChatPage() {
         <div className="space-y-4">
           {messages.map((message, index) => (
             <div key={index} className="w-full">
-              {message.sender === "agent" ? (
+              {message.sender === "client" ? (
                 // Agent message - left aligned
                 <div className="flex gap-2 max-w-[80%]">
                   <div className="h-8 w-8 rounded-full bg-primary flex-shrink-0" />
@@ -122,7 +144,7 @@ export default function ChatPage() {
         </div>
       )}
         <div className="p-4 border-t">
-          <div className="flex items-center gap-2">
+          <form onSubmit={handleSubmit} className="flex items-center gap-2">
             <Textarea
             placeholder="Type a message as a customer"
             value={input}
@@ -133,7 +155,7 @@ export default function ChatPage() {
             <Send className="h-4 w-4" />
             <span>Send</span>
           </Button>
-        </div>
+        </form>
       </div>
     </div>
   )
